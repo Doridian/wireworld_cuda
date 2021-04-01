@@ -67,5 +67,4 @@ void runComputeCellFor(float msTarget)
     if (timedIterations < 1) {
         timedIterations = 1;
     }
-    printf("Rate: %.0f I/s\n", timedIterations / (msActual / 1000.0f));
 }
