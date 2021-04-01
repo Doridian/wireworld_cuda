@@ -48,8 +48,8 @@ __global__ void computeCell(const int width, const char* field, char* outfield)
 void runComputeCell(int iterations)
 {
     for (int i = 0; i < iterations; i++) {
-        computeCell<<<numBlocks, threadsPerBlock>>>(width, d_field, d_outfield);
         std::swap(d_outfield, d_field);
+        computeCell<<<numBlocks, threadsPerBlock>>>(width, d_field, d_outfield);
     }
     cudaDeviceSynchronize();
 }
