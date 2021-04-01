@@ -46,8 +46,8 @@ static int loadFile(const char* fileName)
 
     printf("Got file dimensions %d / %d\n", fileWidth, fileHeight);
 
-    width = fileWidth;
-    height = fileHeight;
+    width = fileWidth + 2;
+    height = fileHeight + 2;
 
     if (width % threadsPerBlock.x) {
         width += threadsPerBlock.x - (width % threadsPerBlock.x);
@@ -75,7 +75,7 @@ static int loadFile(const char* fileName)
             tmp = CELL_EMPTY;
         }
 
-        *getFieldPtrAt(x, y) = tmp;
+        *getFieldPtrAt(x + 1, y + 1) = tmp;
         if (++x >= fileWidth) {
             y++;
             x = 0;

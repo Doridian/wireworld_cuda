@@ -7,19 +7,19 @@
 #include <stdio.h>
 #include <chrono>
 
-__device__ static char getFieldAtIsHead(int x, int y, int width, int height, char* field)
+__device__ inline static char getFieldAtIsHead(int x, int y, int width, char* field)
 {
-    int offset = getFieldOffsetAt(x, y, width, height);
+    int offset = getFieldOffsetAt(x, y, width);
     if (offset < 0) {
         return 0;
     }
     return field[offset] == CELL_ELECTRON_HEAD;
 }
 
-__global__ void computeCell(int width, int height, char* field, char* outfield)
+__global__ void computeCell(int width, char* field, char* outfield)
 {
     char tmp;
-    int offset = getFieldOffsetAt(0, 0, width, 0);
+    int offset = getFieldOffsetAt(0, 0, width);
 
     switch (field[offset])
     {
@@ -31,14 +31,14 @@ __global__ void computeCell(int width, int height, char* field, char* outfield)
             break;
         case CELL_CONDUCTOR:
             tmp = 
-                getFieldAtIsHead(-1, -1, width, height, field) +
-                getFieldAtIsHead(-1, 0, width, height, field) +
-                getFieldAtIsHead(-1, 1, width, height, field) +
-                getFieldAtIsHead(0, -1, width, height, field) +
-                getFieldAtIsHead(0, 1, width, height, field) +
-                getFieldAtIsHead(1, -1, width, height, field) +
-                getFieldAtIsHead(1, 0, width, height, field) +
-                getFieldAtIsHead(1, 1, width, height, field);
+                getFieldAtIsHead(-1, -1, width, field) +
+                getFieldAtIsHead(-1, 0, width, field) +
+                getFieldAtIsHead(-1, 1, width, field) +
+                getFieldAtIsHead(0, -1, width, field) +
+                getFieldAtIsHead(0, 1, width, field) +
+                getFieldAtIsHead(1, -1, width, field) +
+                getFieldAtIsHead(1, 0, width, field) +
+                getFieldAtIsHead(1, 1, width, field);
             if (tmp == 1 || tmp == 2) {
                 outfield[offset] = CELL_ELECTRON_HEAD;
                 break;
@@ -51,7 +51,7 @@ __global__ void computeCell(int width, int height, char* field, char* outfield)
 void runComputeCell(int iterations)
 {
     for (int i = 0; i < iterations; i++) {
-        computeCell<<<numBlocks, threadsPerBlock>>>(width, height, d_field, d_outfield);
+        computeCell<<<numBlocks, threadsPerBlock>>>(width, d_field, d_outfield);
         std::swap(d_outfield, d_field);
     }
     cudaDeviceSynchronize();
@@ -69,4 +69,5 @@ void runComputeCellFor(float msTarget)
     if (timedIterations < 1) {
         timedIterations = 1;
     }
+    printf("I: %d\n", timedIterations);
 }

@@ -6,9 +6,9 @@
 
 static uchar4* d_displayBufferCuda = NULL;
 
-__global__ void drawCell(int width, int height, char* field, uchar4* drawBuffer)
+__global__ void drawCell(int width, char* field, uchar4* drawBuffer)
 {
-    int offset = getFieldOffsetAt(0, 0, width, 0);
+    int offset = getFieldOffsetAt(0, 0, width);
     switch (field[offset])
     {
         case CELL_ELECTRON_HEAD:
@@ -41,7 +41,7 @@ void runDrawCell(void)
     size_t num_bytes;
     cudaGraphicsResourceGetMappedPointer((void**)&d_displayBufferCuda, &num_bytes, displayBufferCuda);
 
-    drawCell<<<numBlocks, threadsPerBlock>>>(width, height, d_outfield, d_displayBufferCuda);
+    drawCell<<<numBlocks, threadsPerBlock>>>(width, d_outfield, d_displayBufferCuda);
 
     cudaGraphicsUnmapResources(1, &displayBufferCuda, 0);
 
