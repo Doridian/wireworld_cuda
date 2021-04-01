@@ -7,19 +7,11 @@
 #include <stdio.h>
 #include <chrono>
 
-__device__ inline static char getFieldAtIsHead(int x, int y, int width, char* field)
-{
-    int offset = getFieldOffsetAt(x, y, width);
-    if (offset < 0) {
-        return 0;
-    }
-    return field[offset] == CELL_ELECTRON_HEAD;
-}
+#define FIELD_AT_IS_HEAD(O) (field[O] == CELL_ELECTRON_HEAD)
 
-__global__ void computeCell(int width, char* field, char* outfield)
+__global__ void computeCell(const int width, const char* field, char* outfield)
 {
-    char tmp;
-    int offset = getFieldOffsetAt(0, 0, width);
+    const int offset = getFieldOffsetAt(0, 0, width);
 
     switch (field[offset])
     {
@@ -29,22 +21,27 @@ __global__ void computeCell(int width, char* field, char* outfield)
         case CELL_ELECTRON_TAIL:
             outfield[offset] = CELL_CONDUCTOR;
             break;
-        case CELL_CONDUCTOR:
-            tmp = 
-                getFieldAtIsHead(-1, -1, width, field) +
-                getFieldAtIsHead(-1, 0, width, field) +
-                getFieldAtIsHead(-1, 1, width, field) +
-                getFieldAtIsHead(0, -1, width, field) +
-                getFieldAtIsHead(0, 1, width, field) +
-                getFieldAtIsHead(1, -1, width, field) +
-                getFieldAtIsHead(1, 0, width, field) +
-                getFieldAtIsHead(1, 1, width, field);
-            if (tmp == 1 || tmp == 2) {
-                outfield[offset] = CELL_ELECTRON_HEAD;
-                break;
-            }
-            outfield[offset] = CELL_CONDUCTOR;
+        case CELL_CONDUCTOR: {
+            int cubeOffset = offset - (1 + width);
+            char neighbourElectronHeads =
+                FIELD_AT_IS_HEAD(cubeOffset) +
+                FIELD_AT_IS_HEAD(cubeOffset + 1) +
+                FIELD_AT_IS_HEAD(cubeOffset + 2);
+        
+            cubeOffset += width;
+            neighbourElectronHeads +=
+                FIELD_AT_IS_HEAD(cubeOffset) +
+                FIELD_AT_IS_HEAD(cubeOffset + 2);
+        
+            cubeOffset += width;
+            neighbourElectronHeads +=
+                FIELD_AT_IS_HEAD(cubeOffset) +
+                FIELD_AT_IS_HEAD(cubeOffset + 1) +
+                FIELD_AT_IS_HEAD(cubeOffset + 2);
+
+            outfield[offset] = (neighbourElectronHeads == 1 || neighbourElectronHeads == 2) ? CELL_ELECTRON_HEAD : CELL_CONDUCTOR;
             break;
+        }
     }
 }
 
@@ -60,6 +57,7 @@ void runComputeCell(int iterations)
 static int timedIterations = 100;
 void runComputeCellFor(float msTarget)
 {
+    runComputeCell(1);
     auto t1 = std::chrono::high_resolution_clock::now();
     runComputeCell(timedIterations);
     auto t2 = std::chrono::high_resolution_clock::now();
@@ -69,5 +67,5 @@ void runComputeCellFor(float msTarget)
     if (timedIterations < 1) {
         timedIterations = 1;
     }
-    printf("I: %d\n", timedIterations);
+    printf("Rate: %.0f I/s\n", timedIterations / (msActual / 1000.0f));
 }

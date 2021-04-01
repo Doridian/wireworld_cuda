@@ -71,8 +71,19 @@ static int loadFile(const char* fileName)
             continue;
         }
 
-        if (tmp != CELL_ELECTRON_HEAD && tmp !=CELL_ELECTRON_TAIL && tmp != CELL_CONDUCTOR) {
-            tmp = CELL_EMPTY;
+        switch (tmp) {
+            case FILE_CELL_CONDUCTOR:
+                tmp = CELL_CONDUCTOR;
+                break;
+            case FILE_CELL_ELECTRON_HEAD:
+                tmp = CELL_ELECTRON_HEAD;
+                break;
+            case FILE_CELL_ELECTRON_TAIL:
+                tmp = CELL_ELECTRON_TAIL;
+                break;
+            default:
+                tmp = CELL_EMPTY;
+                break;
         }
 
         *getFieldPtrAt(x + 1, y + 1) = tmp;
