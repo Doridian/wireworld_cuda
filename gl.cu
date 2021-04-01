@@ -48,7 +48,7 @@ static void displayCallback()
 
 static void idleCallback()
 {
-    runComputeCellFor(10);
+    runComputeCellFor(1000.0f / 30.0f);
     glutPostRedisplay();
 }
 
