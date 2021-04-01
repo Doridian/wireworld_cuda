@@ -4,8 +4,8 @@
 #include "kernel_render.cuh"
 #include "kernel_compute.cuh"
 
-#include "GL/glew.h"
-#include "GL/freeglut.h"
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
