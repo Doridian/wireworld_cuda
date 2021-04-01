@@ -74,7 +74,7 @@ int initGL(int *argc, char **argv)
     glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
 
     // texture
-    displayBuffer = new uchar4[width * height];
+    displayBuffer = new uchar4[(size_t)(width * height)];
     glEnable(GL_TEXTURE_2D);
     glGenTextures(1, &displayBufferTexturePtr);
     glBindTexture(GL_TEXTURE_2D, displayBufferTexturePtr);
@@ -86,7 +86,7 @@ int initGL(int *argc, char **argv)
 
     glGenBuffers(1, &displayBufferPtr);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, displayBufferPtr);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, width * height * sizeof(uchar4), displayBuffer, GL_STREAM_COPY);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, (GLsizeiptr)(width * height * sizeof(uchar4)), displayBuffer, GL_STREAM_COPY);
    
     cudaGraphicsGLRegisterBuffer(&displayBufferCuda, displayBufferPtr, cudaGraphicsMapFlagsWriteDiscard);
 

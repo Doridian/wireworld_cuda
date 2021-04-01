@@ -63,7 +63,7 @@ void runComputeCellFor(float msTarget)
     auto t2 = std::chrono::high_resolution_clock::now();
 
     float msActual = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() / 1000.0f;
-    timedIterations = timedIterations * (msTarget / msActual);
+    timedIterations = (int)(timedIterations * (msTarget / msActual));
     if (timedIterations < 1) {
         timedIterations = 1;
     }

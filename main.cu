@@ -59,34 +59,40 @@ static int loadFile(const char* fileName)
     numBlocks.x = width / threadsPerBlock.x;
     numBlocks.y = height / threadsPerBlock.y;
 
-    field = (char*)malloc(width*height);
-    memset(field, CELL_EMPTY, width*height);
+    size_t memorySize = (size_t)(width * height);
 
-    char tmp;
+    field = (char*)malloc(memorySize);
+    memset(field, CELL_EMPTY, memorySize);
+
+    int charIn;
+    char charOut;
     int x = 0;
     int y = 0;
     do {
-        tmp = fgetc(fd);
-        if (tmp == '\r' || tmp == '\n') {
+        charIn = fgetc(fd);
+        if (charIn < 0) {
+            break;
+        }
+        if (charIn == '\r' || charIn == '\n') {
             continue;
         }
 
-        switch (tmp) {
+        switch (charIn) {
             case FILE_CELL_CONDUCTOR:
-                tmp = CELL_CONDUCTOR;
+                charOut = CELL_CONDUCTOR;
                 break;
             case FILE_CELL_ELECTRON_HEAD:
-                tmp = CELL_ELECTRON_HEAD;
+                charOut = CELL_ELECTRON_HEAD;
                 break;
             case FILE_CELL_ELECTRON_TAIL:
-                tmp = CELL_ELECTRON_TAIL;
+                charOut = CELL_ELECTRON_TAIL;
                 break;
             default:
-                tmp = CELL_EMPTY;
+                charOut = CELL_EMPTY;
                 break;
         }
 
-        *getFieldPtrAt(x + 1, y + 1) = tmp;
+        *getFieldPtrAt(x + 1, y + 1) = charOut;
         if (++x >= fileWidth) {
             y++;
             x = 0;
@@ -96,10 +102,10 @@ static int loadFile(const char* fileName)
     printf("File loaded: %s\n", fileName);
     fclose(fd);
 
-    cudaMalloc(&d_field, width*height);
-    cudaMalloc(&d_outfield, width*height);
-    cudaMemcpy(d_field, field, width*height, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_outfield, field, width*height, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_field, memorySize);
+    cudaMalloc(&d_outfield, memorySize);
+    cudaMemcpy(d_field, field, memorySize, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_outfield, field, memorySize, cudaMemcpyHostToDevice);
 
     return 0;
 }
